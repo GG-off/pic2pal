@@ -7,7 +7,8 @@
 # 'transparency' take '0' (no) or '1' (yes) (default is '0')
 #		the transparency color is added to the colors
 #		useful to create ready-to-use palettes, like in a filter
-# 'size' is both horizontal and vertical, because we are busy creating squares here!
+# 'size' is longer and larger of the square palette generated (default is '1000' giving 1000x1000 *.png files)
+#		size is both horizontal and vertical, because we are busy creating squares here!
 # exemple :		$ ./pic2pal 32 1 500
 # will create a 500x500 33 colors palettes (32 + transparency) for every image in the current directory
 
