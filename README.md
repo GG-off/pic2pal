@@ -1,11 +1,7 @@
-Linux shell script that use ffmpeg to create palettes from files in the current directory, then ImageMagick to enhance them.
+Linux shell script that uses ffmpeg to create palettes from files in the current directory, then ImageMagick to enhance them.
 
-![[exemple_files/gorochu_exemple.png]]
-![[exemple_files/uranus_exemple.jpg]]
-
-![[exemple_files/palettes/gorochu_exemple.png]]
-![[exemple_files/palettes/uranus_exemple.png]]
-
+![](exemple_files/Palettes/gorochu_exemple_palette.png)
+![](exemple_files/Palettes/uranus_exemple_palette.png)
 
 setup :		$ sudo apt-get install ffmpeg magick
 usage (positional) :		$ ./pic2pal [number_of_colors] [transparency] [size]
