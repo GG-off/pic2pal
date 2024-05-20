@@ -1,4 +1,4 @@
-Linux shell script that uses ffmpeg to create palettes from files in the current directory, then ImageMagick to enhance them.
+Linux shell script that uses FFmpeg to create palettes from files in the current directory, then ImageMagick to enhance them.
 
 
 ![](exemple_files/Palettes/gorochu_exemple_palette.png)
@@ -17,7 +17,8 @@ options :
 		the transparency color is added to the colors
 		useful to create ready-to-use palettes, like for a filter
   
- 'size' is both horizontal and vertical, because we are busy creating squares here!
+'size' is lenght and height of the square palette generated (default is '1000' giving 1000x1000 *.png files)
+		size is both horizontal and vertical, because we are busy creating squares here!
  
  exemple :		$ ./pic2pal 32 1 500
  
