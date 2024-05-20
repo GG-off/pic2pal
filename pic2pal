@@ -1,0 +1,58 @@
+#!/bin/bash
+# Use ffmpeg to create palettes from files in the current directory, then ImageMagick to enhance them
+# setup :		$ sudo apt-get install ffmpeg magick
+# usage (positional) :		$ ./pic2pal [number_of_colors] [transparency] [size]
+# options :
+# 'number_of_colors' takes '1' to '256' (default is '256')
+# 'transparency' take '0' (no) or '1' (yes) (default is '0')
+#		the transparency color is added to the colors
+#		useful to create ready-to-use palettes, like in a filter
+# 'size' is both horizontal and vertical, because we are busy creating squares here!
+# exemple :		$ ./pic2pal 32 1 500
+# will create a 500x500 33 colors palettes (32 + transparency) for every image in the current directory
+
+run() {
+default_input $1 $2 $3
+build_palette $ChoixCouleurs $ChoixT
+resize_palette $ChoixSize
+# possibilité de crop automatiquement avec trim
+# possibilité d'ajouter une compression sans perte des PNG
+}
+
+default_input() {
+    ChoixCouleurs=${1:-256}
+    case $2 in
+        0|1) ChoixT=$2 ;;
+        *) ChoixT=0 ;;
+    esac
+    ChoixSize=${3:-1000}
+# probleme : garde des valeurs entre deux run, si le deuxieme utilise les default ça crains
+}
+
+build_palette() {
+NombreCouleurs=$1
+T=$2
+mkdir Palettes
+for i in *.JPG *.jpeg *.jpg *.png *.bmp *.mp4 ;	do
+	echo "Je créé la palette de $i"
+	ffmpeg -i "$i" -vf "palettegen=reserve_transparent=$T:max_colors=$NombreCouleurs" Palettes/"${i%.*}_palette.png"
+done
+}
+
+resize_palette() {
+cd Palettes
+Size=$1
+for i in *.png ; do
+	echo "Je redimensionne $i en "$Size"x"$Size" !"
+	convert $i -scale "$Size"x"$Size"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
+	echo "je retourne $i"
+	convert $i -rotate 180 $i
+done
+}
+
+# possibilité de crop automatiquement avec trim
+# possibilité d'ajouter une compression sans perte des PNG
+
+run $1 $2 $3
+
+exit 0
