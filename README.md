@@ -1,8 +1,7 @@
 Linux shell script that uses FFmpeg to create palettes from files in the current directory, then ImageMagick to enhance them and optipng for lossless compression.
 
 
-![](exemple_files/Palettes/gorochu_exemple_palette.png)
-![](exemple_files/Palettes/uranus_exemple_palette.png)
+![](exemple.png)
 
 setup :		$ sudo apt-get install ffmpeg magick optipng
 
