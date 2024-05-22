@@ -1,59 +1,96 @@
 #!/bin/bash
-# Use ffmpeg to create palettes from files in the current directory, then ImageMagick to enhance them
-# setup :		$ sudo apt-get install ffmpeg magick
-# usage (positional) :		$ ./pic2pal [number_of_colors] [transparency] [size]
-# options :
-# 'number_of_colors' takes '1' to '256' (default is '256')
-# 'transparency' take '0' (no) or '1' (yes) (default is '0')
+# pic2pal uses 'ffmpeg' to create palettes from files in the current directory,
+# 'ImageMagick' to enhance them and 'optipng' for lossless compression.
+# Setup :	$ sudo apt-get install ffmpeg magick optipng
+# usage (positional) :	$ ./pic2pal [-n number] [-s size] [-t] [-f]
+# Options :
+# -n : number of colors takes '1' to '256' (default is '256')
+# -t : transparency take '0' (no) or '1' (yes) (default is '0')
 #		the transparency color is added to the colors
 #		useful to create ready-to-use palettes, like in a filter
-# 'size' is lenght and height of the square palette generated (default is '1000' giving 1000x1000 *.png files)
-#		size is both horizontal and vertical, because we are busy creating squares here!
-# exemple :		$ ./pic2pal 32 1 500
-# will create a 500x500 33 colors palettes (32 + transparency) for every image in the current directory
+# -s : size is lenght and/or height of the square palette generated
+#		default is '500' giving 500x500 *.png when forces into square or if asked for 256 colors
+# -f : force square useful to have a predictable output
+# -c : lossless compression
+# Exemple :	$ ./pic2pal -n 32 -t -s 1000 -f
+#			will create a 1000x1000 32 colors palettes (31 + transparency)
+#			for every image in the current directory
 
 run() {
-default_input $1 $2 $3
-build_palette $ChoixCouleurs $ChoixT
-resize_palette $ChoixSize
-# possibilité de crop automatiquement avec trim
-# possibilité d'ajouter une compression sans perte des PNG
+	input "$@"
+	mkdir Palettes
+	build_palette $ChoixCouleurs $ChoixT # la transparence empeche l'autocrop
+	cd Palettes
+	if [ $ForceSquare = "1" ] && [ $ChoixCouleurs -ge 18 ] ; then auto_crop ; fi
+	resize_palette $ChoixSize
+	if [ $ForceSquare = "0" ] ; then auto_crop ; fi
+	if [ $ForceSquare = "1" ] && [ $ChoixCouleurs -lt 18 ] ; then
+		auto_crop
+		resize_palette $ChoixSize
+	fi
+	flip_palette
+	if [ $ChoixCompression = "1" ] ; then lossless_compression ; fi
+	ls -l
 }
 
-default_input() {
-    ChoixCouleurs=${1:-256}
-    case $2 in
-        0|1) ChoixT=$2 ;;
-        *) ChoixT=0 ;;
-    esac
-    ChoixSize=${3:-1000}
-# probleme : garde des valeurs entre deux run, si le deuxieme utilise les default ça crains
+input() {
+	ChoixCouleurs="256"
+    ChoixT="0"
+    ChoixSize="500"
+	ForceSquare="0"
+	ChoixCompression="0"
+    while getopts ":n:ts:fc" opt; do
+        case $opt in
+            n) ChoixCouleurs="$OPTARG" ;;
+            t) ChoixT="1" ;; 
+            s) ChoixSize="$OPTARG" ;;
+			f) ForceSquare="1" ;;
+			c) ChoixCompression="1" ;;
+            \?) echo "Usage: $(basename "$0") [-n number of colors] [-t add transparency] [-s size] [-f force square] [-c lossless compression] " >&2; exit 1 ;;
+        esac
+    done
+# " ligne inutile a supprimer, sert à mitiger le bug "" de xed
 }
 
 build_palette() {
-NombreCouleurs=$1
-T=$2
-mkdir Palettes
-for i in *.JPG *.jpeg *.jpg *.png *.bmp *.mp4 ;	do
-	echo "Je créé la palette de $i"
-	ffmpeg -i "$i" -vf "palettegen=reserve_transparent=$T:max_colors=$NombreCouleurs" Palettes/"${i%.*}_palette.png"
-done
+	NombreCouleurs=$1
+	T=$2
+	for i in *.JPG *.jpeg *.jpg *.png *.bmp *.mp4 ;	do
+		echo "Je créé la palette de $i"
+		ffmpeg -i "$i" -vf "palettegen=reserve_transparent=$T:max_colors=$NombreCouleurs" Palettes/"${i%.*}_palette.png"
+	done
+}
+
+auto_crop() {
+	for i in *.png ; do
+		convert "$i" \
+			-trim +repage \
+			"$i"
+	done
 }
 
 resize_palette() {
-cd Palettes
 Size=$1
-for i in *.png ; do
-	echo "Je redimensionne $i en "$Size"x"$Size" !"
-	convert $i -scale "$Size"x"$Size"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
-	echo "je retourne $i"
-	convert $i -rotate 180 $i
-done
+	for i in *.png ; do
+		echo "Je redimensionne $i en "$Size"x"$Size" !"
+		convert $i -scale "$Size"x"$Size"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
+	done
 }
 
-# possibilité de crop automatiquement avec trim
-# possibilité d'ajouter une compression sans perte des PNG
+flip_palette() {
+	for i in *.png ; do
+		echo "je retourne $i"
+		convert $i -rotate 180 $i
+	done
+}
 
-run $1 $2 $3
+lossless_compression() {
+	for i in *.png ; do
+		echo "J'optimise $i"
+		optipng -o7 "$i"
+	done
+}
+
+run "$@"
 
 exit 0
