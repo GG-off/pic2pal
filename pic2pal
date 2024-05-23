@@ -5,12 +5,12 @@
 # usage (positional) :	$ ./pic2pal [-n number] [-s size] [-t] [-f]
 # Options :
 # -n : number of colors takes '1' to '256' (default is '256')
-# -t : transparency take '0' (no) or '1' (yes) (default is '0')
-#		the transparency color is added to the colors
-#		useful to create ready-to-use palettes, like in a filter
-# -s : size is lenght and/or height of the square palette generated
-#		default is '500' giving 500x500 *.png when forces into square or if asked for 256 colors
-# -f : force square useful to have a predictable output
+# -t : transparency :
+#	the transparency color is added to the colors
+#	useful to create ready-to-use palettes, like in a filter
+# -l : lenght generated palette, in number of pixels (default is '500')
+# -w : width of the generated palette, in number of pixels (default is '500')
+# -f : forces size, useful to have a predictable output
 # -c : lossless compression
 # Exemple :	$ ./pic2pal -n 32 -t -s 1000 -f
 #			will create a 1000x1000 32 colors palettes (31 + transparency)
@@ -21,12 +21,12 @@ run() {
 	mkdir Palettes
 	build_palette $ChoixCouleurs $ChoixT # la transparence empeche l'autocrop
 	cd Palettes
-	if [ $ForceSquare = "1" ] && [ $ChoixCouleurs -ge 18 ] ; then auto_crop ; fi
-	resize_palette $ChoixSize
-	if [ $ForceSquare = "0" ] ; then auto_crop ; fi
-	if [ $ForceSquare = "1" ] && [ $ChoixCouleurs -lt 18 ] ; then
+	if [ $ForceSize = "1" ] && [ $ChoixCouleurs -ge 18 ] ; then auto_crop ; fi
+	resize_palette $ChoixLength $ChoixWidth
+	if [ $ForceSize = "0" ] ; then auto_crop ; fi
+	if [ $ForceSize = "1" ] && [ $ChoixCouleurs -lt 18 ] ; then
 		auto_crop
-		resize_palette $ChoixSize
+		resize_palette $ChoixLength $ChoixWidth
 	fi
 	flip_palette
 	if [ $ChoixCompression = "1" ] ; then lossless_compression ; fi
@@ -36,31 +36,36 @@ run() {
 input() {
 	ChoixCouleurs="256"
     ChoixT="0"
-    ChoixSize="500"
-	ForceSquare="0"
+	ChoixLength="500"
+	ChoixWidth="500"
+	ForceSize="0"
 	ChoixCompression="0"
-    while getopts ":n:ts:fc" opt; do
+    while getopts ":n:tl:w:fc" opt; do
         case $opt in
             n) ChoixCouleurs="$OPTARG" ;;
             t) ChoixT="1" ;; 
-            s) ChoixSize="$OPTARG" ;;
-			f) ForceSquare="1" ;;
+			l) ChoixLength="$OPTARG" ;;
+			w) ChoixWidth="$OPTARG" ;;
+			f) ForceSize="1" ;;
 			c) ChoixCompression="1" ;;
-            \?) echo "Usage: $(basename "$0") [-n number of colors] [-t add transparency] [-s size] [-f force square] [-c lossless compression] " >&2; exit 1 ;;
+            \?) echo "Usage: $(basename "$0") [-n number of colors] [-t add transparency] [-l length] [-w width] [-f force size] [-c lossless compression] " >&2; exit 1 ;;
         esac
     done
-# " ligne inutile a supprimer, sert à mitiger le bug "" de xed
 }
 
 build_palette() {
 	NombreCouleurs=$1
 	T=$2
 	for i in *.JPG *.jpeg *.jpg *.png *.bmp *.mp4 ;	do
-		echo "Je créé la palette de $i"
-		ffmpeg -i "$i" -vf "palettegen=reserve_transparent=$T:max_colors=$NombreCouleurs" Palettes/"${i%.*}_palette.png"
+		if [[ -e "$i" ]]; then
+			echo "Je créé la palette de $i"
+			ffmpeg -i "$i" -vf "palettegen=reserve_transparent=$T:max_colors=$NombreCouleurs" Palettes/"${i%.*}_palette.png"
+		else
+			echo "Aucun fichier de format $i trouvé."
+		fi
 	done
 }
-
+ # vérifier que les fichiers existent évite des bugs, il cherche sinon à faire trop d'itérations et à compléter les noms
 auto_crop() {
 	for i in *.png ; do
 		convert "$i" \
@@ -70,10 +75,11 @@ auto_crop() {
 }
 
 resize_palette() {
-Size=$1
+Length=$1
+Width=$2
 	for i in *.png ; do
-		echo "Je redimensionne $i en "$Size"x"$Size" !"
-		convert $i -scale "$Size"x"$Size"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
+		echo "Je redimensionne $i en "$Length"x"$Width" !"
+		convert $i -scale "$Length"x"$Width"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
 	done
 }
 

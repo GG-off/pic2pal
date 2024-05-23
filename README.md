@@ -5,7 +5,7 @@ Linux shell script that uses FFmpeg to create palettes from files in the current
 
 setup :		$ sudo apt-get install ffmpeg magick optipng
 
-usage (positional) :		$ ./pic2pal [number_of_colors] [transparency] [size]
+usage (positional) :		$ ./pic2pal [-option] [-flag value]
 
 options :
 
@@ -13,28 +13,27 @@ options :
 
 -t : add transparency color,	useful to create ready-to-use palettes, like for a filter
   
--s : size : lenght and height of the square palette generated (default is '1000' giving 1000x1000 *.png files)
-		size is both horizontal and vertical, because we are busy creating squares here!
+-l : lenght generated palette, in number of pixels (default is '500')
 
--f : force square : useful to have a predictable output
+-w : width of the generated palette, in number of pixels (default is '500')
 
--c : finish with lossless compression of palettes
+-f : forces size, useful to have a predictable output
 
-Exemple :	$ ./pic2pal -n 32 -t -s 1000 -f
-			will create a 1000x1000 32 colors palettes (31 + transparency)
+-c : lossless compression of palettes
+
+Exemple :	$ ./pic2pal -n 32 -t -l 1000 -f
+			will create a 1000x500 32 colors palettes (31 + transparency)
 			for every image in the current directory
 
-sorry for the french lol (>'.')>
-
-à ajouter
+wishlist
 
 x flags (done)
 
-x possibilité de crop automatiquement avec trim (done)
+x automatic crop with trim (done)
 
-x possibilité d'ajouter une compression sans perte des PNG (done)
+x PNG lossless compression (done)
 
-- autre méthodes de construction de palettes
+x not-square-palette building (done)
 
-- en go à tester pour de futurs améliorations : $ sudo apt-get install golang && go get -u github.com/mccutchen/palettor && palettor -help
+- other palette building methods like this in go : $ sudo apt-get install golang && go get -u github.com/mccutchen/palettor && palettor -help
 
