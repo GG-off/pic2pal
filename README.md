@@ -1,4 +1,4 @@
-Linux shell script that uses FFmpeg to create palettes from files in the current directory, then ImageMagick to enhance them and optipng for lossless compression.
+Linux shell script that uses FFmpeg to bulk create palettes from files in the current directory, then ImageMagick to enhance them and optipng for lossless compression.
 
 
 ![](exemple.png)
@@ -13,7 +13,7 @@ options :
 
 -t : add transparency color,	useful to create ready-to-use palettes, like for a filter
   
--l : lenght generated palette, in number of pixels (default is '500')
+-l : height generated palette, in number of pixels (default is '500')
 
 -w : width of the generated palette, in number of pixels (default is '500')
 

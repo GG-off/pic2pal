@@ -1,5 +1,5 @@
 #!/bin/bash
-# pic2pal uses 'ffmpeg' to create palettes from files in the current directory,
+# pic2pal uses 'ffmpeg' to bulk create palettes from files in the current directory,
 # 'ImageMagick' to enhance them and 'optipng' for lossless compression.
 # Setup :	$ sudo apt-get install ffmpeg magick optipng
 # usage (positional) :	$ ./pic2pal [-n number] [-s size] [-t] [-f]
@@ -8,7 +8,7 @@
 # -t : transparency :
 #	the transparency color is added to the colors
 #	useful to create ready-to-use palettes, like in a filter
-# -l : lenght generated palette, in number of pixels (default is '500')
+# -l : height of the generated palette, in number of pixels (default is '500')
 # -w : width of the generated palette, in number of pixels (default is '500')
 # -f : forces size, useful to have a predictable output
 # -c : lossless compression
@@ -22,11 +22,11 @@ run() {
 	build_palette $ChoixCouleurs $ChoixT # la transparence empeche l'autocrop
 	cd Palettes
 	if [ $ForceSize = "1" ] && [ $ChoixCouleurs -ge 18 ] ; then auto_crop ; fi
-	resize_palette $ChoixLength $ChoixWidth
+	resize_palette $ChoixHeight $ChoixWidth
 	if [ $ForceSize = "0" ] ; then auto_crop ; fi
 	if [ $ForceSize = "1" ] && [ $ChoixCouleurs -lt 18 ] ; then
 		auto_crop
-		resize_palette $ChoixLength $ChoixWidth
+		resize_palette $ChoixHeight $ChoixWidth
 	fi
 	flip_palette
 	if [ $ChoixCompression = "1" ] ; then lossless_compression ; fi
@@ -36,7 +36,7 @@ run() {
 input() {
 	ChoixCouleurs="256"
     ChoixT="0"
-	ChoixLength="500"
+	ChoixHeight="500"
 	ChoixWidth="500"
 	ForceSize="0"
 	ChoixCompression="0"
@@ -44,11 +44,11 @@ input() {
         case $opt in
             n) ChoixCouleurs="$OPTARG" ;;
             t) ChoixT="1" ;; 
-			l) ChoixLength="$OPTARG" ;;
+			l) ChoixHeight="$OPTARG" ;;
 			w) ChoixWidth="$OPTARG" ;;
 			f) ForceSize="1" ;;
 			c) ChoixCompression="1" ;;
-            \?) echo "Usage: $(basename "$0") [-n number of colors] [-t add transparency] [-l length] [-w width] [-f force size] [-c lossless compression] " >&2; exit 1 ;;
+            \?) echo "Usage: $(basename "$0") [-n number of colors] [-t add transparency] [-l Height] [-w width] [-f force size] [-c lossless compression] " >&2; exit 1 ;;
         esac
     done
 }
@@ -75,11 +75,11 @@ auto_crop() {
 }
 
 resize_palette() {
-Length=$1
+Height=$1
 Width=$2
 	for i in *.png ; do
-		echo "Je redimensionne $i en "$Length"x"$Width" !"
-		convert $i -scale "$Length"x"$Width"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
+		echo "Je redimensionne $i en "$Height"x"$Width" !"
+		convert $i -scale "$Width"x"$Height"\! $i # \! permet d'ignorer le ratio et de forcer la taille de l'output
 	done
 }
 
