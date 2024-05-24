@@ -13,7 +13,7 @@ options :
 
 -t : add transparency color,	useful to create ready-to-use palettes, like for a filter
   
--l : height generated palette, in number of pixels (default is '500')
+-l : height of the generated palette, in number of pixels (default is '500')
 
 -w : width of the generated palette, in number of pixels (default is '500')
 
